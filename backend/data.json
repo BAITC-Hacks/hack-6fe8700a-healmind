@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "data_status": "demonstration",
+  "description": "Демонстрационные данные: исходные показатели, каталог и официальная формула не предоставлены. Значения подобраны для базы 52.56 и примера 56.54; это не подтверждение официального расчёта.",
+  "score_formula": "Среднее арифметическое 25 показателей (5 районов × 5 показателей), равные веса. Все показатели: больше — лучше. Сначала суммируются эффекты и синергии, затем значения ограничиваются 0..100. Округление результата до сотых ROUND_HALF_UP.",
+  "synergy_rule": "Каждая синергия применяется один раз в каждом районе, где назначены все перечисленные меры. Дополнительной платы нет. Несколько синергий складываются.",
+  "assignment_rule": "Ровно 5 назначений. Одинаковая мера в разных районах разрешена и оплачивается отдельно; повтор пары мера/район запрещён. Максимум 2 назначения из одного направления во всём плане.",
+  "rules": {"budget": 100, "max_per_direction": 2, "critical_threshold": 40, "indicator_min": 0, "indicator_max": 100},
+  "metrics": {"health": "Здоровье", "environment": "Экология", "mobility": "Мобильность", "safety": "Безопасность", "accessibility": "Доступность услуг"},
+  "directions": {"health": "Здравоохранение", "environment": "Экология", "transport": "Транспорт", "safety": "Безопасность", "social": "Социальная инфраструктура"},
+  "districts": [
+    {"id": "central", "name": "Центральный", "indicators": {"health": 65, "environment": 55, "mobility": 45, "safety": 50, "accessibility": 55}},
+    {"id": "north", "name": "Северный", "indicators": {"health": 40, "environment": 48, "mobility": 52, "safety": 62, "accessibility": 38}},
+    {"id": "south", "name": "Южный", "indicators": {"health": 70, "environment": 60, "mobility": 65, "safety": 50, "accessibility": 55}},
+    {"id": "east", "name": "Восточный", "indicators": {"health": 35, "environment": 45, "mobility": 40, "safety": 55, "accessibility": 45}},
+    {"id": "west", "name": "Западный", "indicators": {"health": 60, "environment": 58, "mobility": 56, "safety": 62, "accessibility": 48}}
+  ],
+  "measures": [
+    {"id": "screening", "name": "Мобильная диспансеризация", "direction": "health", "cost": 18, "effects": {"health": 12, "accessibility": 6}},
+    {"id": "mental_health", "name": "Центр психологической поддержки", "direction": "health", "cost": 20, "effects": {"health": 10, "safety": 10}},
+    {"id": "clinic", "name": "Модернизация поликлиники", "direction": "health", "cost": 30, "effects": {"health": 18, "accessibility": 8}},
+    {"id": "greening", "name": "Озеленение района", "direction": "environment", "cost": 16, "effects": {"environment": 16}},
+    {"id": "recycling", "name": "Раздельный сбор отходов", "direction": "environment", "cost": 12, "effects": {"environment": 10}},
+    {"id": "air_monitoring", "name": "Контроль и снижение выбросов", "direction": "environment", "cost": 22, "effects": {"environment": 14, "health": 4}},
+    {"id": "transit", "name": "Расширение автобусных маршрутов", "direction": "transport", "cost": 22, "effects": {"mobility": 12, "accessibility": 6}},
+    {"id": "bike_lanes", "name": "Велосипедные дорожки", "direction": "transport", "cost": 15, "effects": {"mobility": 9, "environment": 4}},
+    {"id": "accessible_stops", "name": "Доступные остановки", "direction": "transport", "cost": 10, "effects": {"mobility": 5, "accessibility": 8}},
+    {"id": "lighting", "name": "Освещение улиц", "direction": "safety", "cost": 14, "effects": {"safety": 15, "accessibility": 8}},
+    {"id": "safe_crossings", "name": "Безопасные переходы", "direction": "safety", "cost": 13, "effects": {"safety": 10, "mobility": 4}},
+    {"id": "community_center", "name": "Общественный центр", "direction": "social", "cost": 24, "effects": {"accessibility": 14, "health": 4}},
+    {"id": "sports", "name": "Спортивные площадки", "direction": "social", "cost": 17, "effects": {"health": 8, "accessibility": 6}},
+    {"id": "digital_services", "name": "Центр цифровых услуг", "direction": "social", "cost": 11, "effects": {"accessibility": 10}}
+  ],
+  "synergies": [
+    {"id": "reachable_screening", "measure_ids": ["screening", "transit"], "effects": {"health": 4.5}},
+    {"id": "green_cycling", "measure_ids": ["greening", "bike_lanes"], "effects": {"health": 3, "environment": 2}},
+    {"id": "visible_crossings", "measure_ids": ["lighting", "safe_crossings"], "effects": {"safety": 4}},
+    {"id": "community_support", "measure_ids": ["mental_health", "community_center"], "effects": {"health": 5}},
+    {"id": "accessible_transit", "measure_ids": ["transit", "accessible_stops"], "effects": {"accessibility": 4}}
+  ],
+  "test_example": {
+    "selections": [
+      {"measure_id": "screening", "district_id": "north"},
+      {"measure_id": "mental_health", "district_id": "east"},
+      {"measure_id": "greening", "district_id": "east"},
+      {"measure_id": "transit", "district_id": "north"},
+      {"measure_id": "lighting", "district_id": "west"}
+    ],
+    "expected": {"base_score": 52.56, "score": 56.54, "budget_spent": 90, "budget_remaining": 10, "critical_before": 2, "critical_after": 0},
+    "explanation": "Базовая сумма 1314 / 25 = 52.56. Эффекты 18 + 20 + 16 + 18 + 23 = 95; синергия диспансеризации и транспорта +4.5. Итог (1314 + 99.5) / 25 = 56.54."
+  }
+}
