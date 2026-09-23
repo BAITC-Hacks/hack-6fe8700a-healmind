@@ -1,52 +1,402 @@
 {
-  "schema_version": 1,
-  "data_status": "demonstration",
-  "description": "Демонстрационные данные: исходные показатели, каталог и официальная формула не предоставлены. Значения подобраны для базы 52.56 и примера 56.54; это не подтверждение официального расчёта.",
-  "score_formula": "Среднее арифметическое 25 показателей (5 районов × 5 показателей), равные веса. Все показатели: больше — лучше. Сначала суммируются эффекты и синергии, затем значения ограничиваются 0..100. Округление результата до сотых ROUND_HALF_UP.",
-  "synergy_rule": "Каждая синергия применяется один раз в каждом районе, где назначены все перечисленные меры. Дополнительной платы нет. Несколько синергий складываются.",
-  "assignment_rule": "Ровно 5 назначений. Одинаковая мера в разных районах разрешена и оплачивается отдельно; повтор пары мера/район запрещён. Максимум 2 назначения из одного направления во всём плане.",
-  "rules": {"budget": 100, "max_per_direction": 2, "critical_threshold": 40, "indicator_min": 0, "indicator_max": 100},
-  "metrics": {"health": "Здоровье", "environment": "Экология", "mobility": "Мобильность", "safety": "Безопасность", "accessibility": "Доступность услуг"},
-  "directions": {"health": "Здравоохранение", "environment": "Экология", "transport": "Транспорт", "safety": "Безопасность", "social": "Социальная инфраструктура"},
+  "schema_version": 2,
+  "data_status": "official_dataset",
+  "source": "Датасет районов.pdf, разделы 1–4, 5 страниц",
+  "description": "Учебная модель на условных данных из предоставленного датасета, не прогноз реальных последствий для Астаны.",
+  "score_formula": "D_d = sum(weight_k * indicator_dk); D_avg = sum(population_share_d * D_d); Score = 0.7 * D_avg + 0.3 * min(D_d) - N_crit. N_crit — число показателей строго ниже 40.",
+  "effect_rule": "Полный эффект умножается на (8 - lag) / 8. Городские меры действуют на все районы. После сложения эффектов и синергий показатели ограничиваются 0..100.",
+  "synergy_rule": "Фиксированный бонус без масштабирования лагом применяется в районе первой меры пары, если выбраны обе меры.",
+  "assignment_rule": "Ровно 5 разных мероприятий, каждое максимум один раз. Для районной меры district_id обязателен, для городской отсутствует или null. Максимум 2 меры одного направления; порядок решений не влияет на результат.",
+  "rules": {
+    "budget": 100,
+    "selection_count": 5,
+    "max_per_direction": 2,
+    "horizon_quarters": 8,
+    "critical_threshold": 40,
+    "indicator_min": 0,
+    "indicator_max": 100,
+    "average_weight": 0.7,
+    "minimum_weight": 0.3,
+    "critical_penalty": 1
+  },
+  "metrics": {
+    "T1": "Разгрузка дорог",
+    "T2": "Доступность общественного транспорта",
+    "E1": "Озеленение",
+    "E2": "Качество воздуха",
+    "S1": "Школы и детсады",
+    "S2": "Поликлиники и первичная медпомощь",
+    "B1": "Безопасность улиц",
+    "B2": "Безопасность дорожного движения",
+    "C1": "Надёжность ЖКХ",
+    "C2": "Скорость решения обращений жителей"
+  },
+  "metric_weights": {
+    "T1": 0.1,
+    "T2": 0.1,
+    "E1": 0.09,
+    "E2": 0.11,
+    "S1": 0.11,
+    "S2": 0.11,
+    "B1": 0.09,
+    "B2": 0.09,
+    "C1": 0.1,
+    "C2": 0.1
+  },
+  "directions": {
+    "transport": "Транспорт",
+    "environment": "Экология",
+    "social": "Соцсфера",
+    "safety": "Безопасность",
+    "services": "Сервисы"
+  },
   "districts": [
-    {"id": "central", "name": "Центральный", "indicators": {"health": 65, "environment": 55, "mobility": 45, "safety": 50, "accessibility": 55}},
-    {"id": "north", "name": "Северный", "indicators": {"health": 40, "environment": 48, "mobility": 52, "safety": 62, "accessibility": 38}},
-    {"id": "south", "name": "Южный", "indicators": {"health": 70, "environment": 60, "mobility": 65, "safety": 50, "accessibility": 55}},
-    {"id": "east", "name": "Восточный", "indicators": {"health": 35, "environment": 45, "mobility": 40, "safety": 55, "accessibility": 45}},
-    {"id": "west", "name": "Западный", "indicators": {"health": 60, "environment": 58, "mobility": 56, "safety": 62, "accessibility": 48}}
+    {
+      "id": "esil",
+      "name": "Есиль",
+      "population_share": 0.27,
+      "indicators": {
+        "T1": 45,
+        "T2": 62,
+        "E1": 68,
+        "E2": 72,
+        "S1": 48,
+        "S2": 55,
+        "B1": 78,
+        "B2": 60,
+        "C1": 75,
+        "C2": 70
+      }
+    },
+    {
+      "id": "almaty",
+      "name": "Алматы",
+      "population_share": 0.24,
+      "indicators": {
+        "T1": 40,
+        "T2": 75,
+        "E1": 50,
+        "E2": 55,
+        "S1": 60,
+        "S2": 65,
+        "B1": 62,
+        "B2": 52,
+        "C1": 50,
+        "C2": 60
+      }
+    },
+    {
+      "id": "saryarka",
+      "name": "Сарыарка",
+      "population_share": 0.2,
+      "indicators": {
+        "T1": 50,
+        "T2": 70,
+        "E1": 42,
+        "E2": 40,
+        "S1": 62,
+        "S2": 68,
+        "B1": 58,
+        "B2": 55,
+        "C1": 45,
+        "C2": 55
+      }
+    },
+    {
+      "id": "baikonur",
+      "name": "Байконур",
+      "population_share": 0.13,
+      "indicators": {
+        "T1": 52,
+        "T2": 68,
+        "E1": 55,
+        "E2": 50,
+        "S1": 58,
+        "S2": 60,
+        "B1": 52,
+        "B2": 58,
+        "C1": 55,
+        "C2": 58
+      }
+    },
+    {
+      "id": "nura",
+      "name": "Нура",
+      "population_share": 0.16,
+      "indicators": {
+        "T1": 55,
+        "T2": 40,
+        "E1": 45,
+        "E2": 65,
+        "S1": 38,
+        "S2": 35,
+        "B1": 55,
+        "B2": 50,
+        "C1": 60,
+        "C2": 50
+      }
+    }
   ],
   "measures": [
-    {"id": "screening", "name": "Мобильная диспансеризация", "direction": "health", "cost": 18, "effects": {"health": 12, "accessibility": 6}},
-    {"id": "mental_health", "name": "Центр психологической поддержки", "direction": "health", "cost": 20, "effects": {"health": 10, "safety": 10}},
-    {"id": "clinic", "name": "Модернизация поликлиники", "direction": "health", "cost": 30, "effects": {"health": 18, "accessibility": 8}},
-    {"id": "greening", "name": "Озеленение района", "direction": "environment", "cost": 16, "effects": {"environment": 16}},
-    {"id": "recycling", "name": "Раздельный сбор отходов", "direction": "environment", "cost": 12, "effects": {"environment": 10}},
-    {"id": "air_monitoring", "name": "Контроль и снижение выбросов", "direction": "environment", "cost": 22, "effects": {"environment": 14, "health": 4}},
-    {"id": "transit", "name": "Расширение автобусных маршрутов", "direction": "transport", "cost": 22, "effects": {"mobility": 12, "accessibility": 6}},
-    {"id": "bike_lanes", "name": "Велосипедные дорожки", "direction": "transport", "cost": 15, "effects": {"mobility": 9, "environment": 4}},
-    {"id": "accessible_stops", "name": "Доступные остановки", "direction": "transport", "cost": 10, "effects": {"mobility": 5, "accessibility": 8}},
-    {"id": "lighting", "name": "Освещение улиц", "direction": "safety", "cost": 14, "effects": {"safety": 15, "accessibility": 8}},
-    {"id": "safe_crossings", "name": "Безопасные переходы", "direction": "safety", "cost": 13, "effects": {"safety": 10, "mobility": 4}},
-    {"id": "community_center", "name": "Общественный центр", "direction": "social", "cost": 24, "effects": {"accessibility": 14, "health": 4}},
-    {"id": "sports", "name": "Спортивные площадки", "direction": "social", "cost": 17, "effects": {"health": 8, "accessibility": 6}},
-    {"id": "digital_services", "name": "Центр цифровых услуг", "direction": "social", "cost": 11, "effects": {"accessibility": 10}}
+    {
+      "id": "M1",
+      "name": "Выделенные полосы для автобусов",
+      "direction": "transport",
+      "scope": "district",
+      "cost": 18,
+      "lag": 2,
+      "effects": {
+        "T1": 6,
+        "T2": 9
+      }
+    },
+    {
+      "id": "M2",
+      "name": "Умные светофоры (адаптивное управление)",
+      "direction": "transport",
+      "scope": "city",
+      "cost": 22,
+      "lag": 2,
+      "effects": {
+        "T1": 4,
+        "B2": 3
+      }
+    },
+    {
+      "id": "M3",
+      "name": "Линия ЛРТ / расширение",
+      "direction": "transport",
+      "scope": "district",
+      "cost": 30,
+      "lag": 4,
+      "effects": {
+        "T1": 16,
+        "T2": 20,
+        "E2": 4
+      }
+    },
+    {
+      "id": "M4",
+      "name": "Парк / сквер",
+      "direction": "environment",
+      "scope": "district",
+      "cost": 15,
+      "lag": 2,
+      "effects": {
+        "E1": 12,
+        "E2": 3,
+        "B1": 2
+      }
+    },
+    {
+      "id": "M5",
+      "name": "Перевод частного сектора на чистое топливо",
+      "direction": "environment",
+      "scope": "district",
+      "cost": 25,
+      "lag": 3,
+      "effects": {
+        "E2": 14,
+        "C1": 4
+      }
+    },
+    {
+      "id": "M6",
+      "name": "Городская программа озеленения и ветрозащитных полос",
+      "direction": "environment",
+      "scope": "city",
+      "cost": 20,
+      "lag": 4,
+      "effects": {
+        "E1": 5,
+        "E2": 3
+      }
+    },
+    {
+      "id": "M7",
+      "name": "Школа + детсад (модульное строительство)",
+      "direction": "social",
+      "scope": "district",
+      "cost": 24,
+      "lag": 3,
+      "effects": {
+        "S1": 16
+      }
+    },
+    {
+      "id": "M8",
+      "name": "Центр семейного здоровья / поликлиника",
+      "direction": "social",
+      "scope": "district",
+      "cost": 20,
+      "lag": 3,
+      "effects": {
+        "S2": 14
+      }
+    },
+    {
+      "id": "M9",
+      "name": "Дворовые спорт-хабы",
+      "direction": "social",
+      "scope": "district",
+      "cost": 10,
+      "lag": 1,
+      "effects": {
+        "S1": 3,
+        "S2": 3,
+        "B1": 3
+      }
+    },
+    {
+      "id": "M10",
+      "name": "Освещение и камеры (расширение Safe City)",
+      "direction": "safety",
+      "scope": "district",
+      "cost": 12,
+      "lag": 1,
+      "effects": {
+        "B1": 12,
+        "B2": 2
+      }
+    },
+    {
+      "id": "M11",
+      "name": "Безопасные переходы и школьные зоны",
+      "direction": "safety",
+      "scope": "district",
+      "cost": 10,
+      "lag": 1,
+      "effects": {
+        "B2": 12,
+        "T1": -2
+      }
+    },
+    {
+      "id": "M12",
+      "name": "Единая цифровая платформа обращений",
+      "direction": "services",
+      "scope": "city",
+      "cost": 14,
+      "lag": 1,
+      "effects": {
+        "C2": 5
+      }
+    },
+    {
+      "id": "M13",
+      "name": "Модернизация тепло- и водосетей",
+      "direction": "services",
+      "scope": "district",
+      "cost": 28,
+      "lag": 4,
+      "effects": {
+        "C1": 18,
+        "E2": 2
+      }
+    },
+    {
+      "id": "M14",
+      "name": "Аварийные бригады ЖКХ + раннее оповещение",
+      "direction": "services",
+      "scope": "city",
+      "cost": 16,
+      "lag": 1,
+      "effects": {
+        "C1": 5,
+        "C2": 2
+      }
+    }
   ],
   "synergies": [
-    {"id": "reachable_screening", "measure_ids": ["screening", "transit"], "effects": {"health": 4.5}},
-    {"id": "green_cycling", "measure_ids": ["greening", "bike_lanes"], "effects": {"health": 3, "environment": 2}},
-    {"id": "visible_crossings", "measure_ids": ["lighting", "safe_crossings"], "effects": {"safety": 4}},
-    {"id": "community_support", "measure_ids": ["mental_health", "community_center"], "effects": {"health": 5}},
-    {"id": "accessible_transit", "measure_ids": ["transit", "accessible_stops"], "effects": {"accessibility": 4}}
+    {
+      "id": "M1_M2",
+      "measure_ids": [
+        "M1",
+        "M2"
+      ],
+      "effects": {
+        "T1": 2
+      }
+    },
+    {
+      "id": "M10_M12",
+      "measure_ids": [
+        "M10",
+        "M12"
+      ],
+      "effects": {
+        "B1": 2
+      }
+    },
+    {
+      "id": "M5_M6",
+      "measure_ids": [
+        "M5",
+        "M6"
+      ],
+      "effects": {
+        "E2": 2
+      }
+    }
+  ],
+  "incompatibilities": [
+    {
+      "measure_ids": [
+        "M1",
+        "M3"
+      ],
+      "scope": "global",
+      "reason": "Либо BRT, либо ЛРТ, в любом районе"
+    },
+    {
+      "measure_ids": [
+        "M4",
+        "M7"
+      ],
+      "scope": "same_district",
+      "reason": "Конфликт за участок"
+    },
+    {
+      "measure_ids": [
+        "M5",
+        "M13"
+      ],
+      "scope": "same_district",
+      "reason": "Дублирование программы"
+    }
   ],
   "test_example": {
     "selections": [
-      {"measure_id": "screening", "district_id": "north"},
-      {"measure_id": "mental_health", "district_id": "east"},
-      {"measure_id": "greening", "district_id": "east"},
-      {"measure_id": "transit", "district_id": "north"},
-      {"measure_id": "lighting", "district_id": "west"}
+      {
+        "measure_id": "M7",
+        "district_id": "nura"
+      },
+      {
+        "measure_id": "M8",
+        "district_id": "nura"
+      },
+      {
+        "measure_id": "M10",
+        "district_id": "nura"
+      },
+      {
+        "measure_id": "M12",
+        "district_id": null
+      },
+      {
+        "measure_id": "M5",
+        "district_id": "saryarka"
+      }
     ],
-    "expected": {"base_score": 52.56, "score": 56.54, "budget_spent": 90, "budget_remaining": 10, "critical_before": 2, "critical_after": 0},
-    "explanation": "Базовая сумма 1314 / 25 = 52.56. Эффекты 18 + 20 + 16 + 18 + 23 = 95; синергия диспансеризации и транспорта +4.5. Итог (1314 + 99.5) / 25 = 56.54."
+    "expected": {
+      "base_score": 52.56,
+      "score": 56.54,
+      "base_score_exact": "52.55768",
+      "score_exact": "56.54307",
+      "budget_spent": 95,
+      "budget_remaining": 5,
+      "critical_before": 2,
+      "critical_after": 0
+    }
   }
 }
