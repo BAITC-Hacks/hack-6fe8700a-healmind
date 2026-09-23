@@ -23,7 +23,10 @@ except ModuleNotFoundError as exc:
     if exc.name != "calculator":
         raise
     calculator = None
-
+try:
+    ai_analyst = import_module("ai_analyst")
+except ModuleNotFoundError:
+    ai_analyst = None
 # Временные названия, цены и эффекты; заменить реальным каталогом.
 CATALOG = {
     "M1": {"name": "Ремонт дорог", "cost": 220},
@@ -133,6 +136,15 @@ def main():
         try:
             with st.spinner("Оцениваем решения…"):
                 result = calculator.calculate(decisions) if calculator is not None else demo_calculate(decisions)
+                if ai_analyst is not None:
+                    try:
+                        result["ai_analysis"] = ai_analyst.analyze_result(result)
+                    except Exception as ai_error:
+                        result["ai_analysis"] = (
+                            f"AI-анализ временно недоступен: {ai_error}"
+                        )
+                else:
+                    result["ai_analysis"] = "AI-модуль не подключён."
                 required = {"score", "indicators", "critical_before", "critical_after", "ai_analysis"}
                 if not isinstance(result, dict) or not required.issubset(result):
                     raise ValueError("Калькулятор вернул результат в неподдерживаемом формате.")
